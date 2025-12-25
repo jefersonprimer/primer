@@ -1,8 +1,8 @@
-name: Deploy to GitHub Pages
+name: Build and deploy Pages (Astro)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   workflow_dispatch:
 
 permissions:
@@ -11,18 +11,34 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  build-and-upload:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install, build, and upload your site
-        uses: withastro/action@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-            package-manager: npm
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        run: npm run build
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
 
   deploy:
-    needs: build
+    needs: build-and-upload
     runs-on: ubuntu-latest
     environment:
       name: github-pages
