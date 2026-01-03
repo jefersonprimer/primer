@@ -16,9 +16,6 @@ export async function POST(req: NextRequest) {
     let stripePriceId = '';
 
     switch (priceId) {
-      case 'basic-monthly':
-        stripePriceId = process.env.STRIPE_PRICE_BASIC_MONTHLY!;
-        break;
       case 'plus-monthly':
         stripePriceId = process.env.STRIPE_PRICE_PLUS_MONTHLY!;
         break;

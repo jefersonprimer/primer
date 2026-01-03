@@ -49,7 +49,7 @@ export function PricingClient({ user, loginUrl }: PricingClientProps) {
   const plans = [
     {
       name: 'Free',
-      price: '$0',
+      price: 'R$ 0',
       period: '/month',
       description: 'Perfect for getting started',
       features: ['Basic Analytics', '1 Project', 'Community Support', 'Limited Storage'],
@@ -57,17 +57,8 @@ export function PricingClient({ user, loginUrl }: PricingClientProps) {
       priceId: null,
     },
     {
-      name: 'Basic',
-      price: billingInterval === 'month' ? '$9' : '-',
-      period: billingInterval === 'month' ? '/month' : '',
-      description: 'For personal projects',
-      features: ['Standard Analytics', '3 Projects', 'Email Support', '5GB Storage'],
-      action: 'Subscribe',
-      priceId: billingInterval === 'month' ? 'basic-monthly' : null,
-    },
-    {
       name: 'Plus',
-      price: billingInterval === 'month' ? '$19' : '$190',
+      price: billingInterval === 'month' ? 'R$ 10' : 'R$ 100',
       period: billingInterval === 'month' ? '/month' : '/year',
       description: 'For growing businesses',
       features: ['Advanced Analytics', '5 Projects', 'Priority Support', '10GB Storage', 'Custom Domain'],
@@ -76,7 +67,7 @@ export function PricingClient({ user, loginUrl }: PricingClientProps) {
     },
     {
       name: 'Pro',
-      price: billingInterval === 'month' ? '$49' : '$490',
+      price: billingInterval === 'month' ? 'R$ 20' : 'R$ 180',
       period: billingInterval === 'month' ? '/month' : '/year',
       description: 'For large scale applications',
       features: ['Enterprise Analytics', 'Unlimited Projects', '24/7 Support', 'Unlimited Storage', 'SSO', 'Audit Logs'],
