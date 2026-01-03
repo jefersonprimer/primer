@@ -80,7 +80,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/pricing', req.url));
 
   } catch (error) {
-    console.error('Auth Error:', error);
+    console.error('Auth Error:', error instanceof Error ? error.message : error);
+    console.error('Auth Error Stack:', error instanceof Error ? error.stack : 'N/A');
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
