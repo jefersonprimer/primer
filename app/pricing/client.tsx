@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface User {
@@ -15,15 +15,20 @@ interface PricingClientProps {
 
 export function PricingClient({ user, loginUrl }: PricingClientProps) {
   const [billingInterval, setBillingInterval] = useState<'month' | 'year'>('month');
+  const [isProcessing, setIsProcessing] = useState(false);
   const searchParams = useSearchParams();
   const isSuccess = searchParams.get('success');
   const isCanceled = searchParams.get('canceled');
 
-  const handleSubscribe = async (priceId: string) => {
+  const handleSubscribe = useCallback(async (priceId: string) => {
     if (!user) {
+      // Salvar o plano escolhido antes de redirecionar para login
+      localStorage.setItem('pendingPriceId', priceId);
       window.location.href = loginUrl;
       return;
     }
+
+    setIsProcessing(true);
 
     try {
       const response = await fetch('/api/stripe/checkout', {
@@ -43,8 +48,19 @@ export function PricingClient({ user, loginUrl }: PricingClientProps) {
       }
     } catch (error) {
       console.error('Error:', error);
+    } finally {
+      setIsProcessing(false);
     }
-  };
+  }, [user, loginUrl]);
+
+  // Processar plano pendente após login com Google
+  useEffect(() => {
+    const pendingPriceId = localStorage.getItem('pendingPriceId');
+    if (user && pendingPriceId && !isProcessing) {
+      localStorage.removeItem('pendingPriceId');
+      handleSubscribe(pendingPriceId);
+    }
+  }, [user, handleSubscribe, isProcessing]);
 
   const plans = [
     {
@@ -89,18 +105,16 @@ export function PricingClient({ user, loginUrl }: PricingClientProps) {
           <button
             type="button"
             onClick={() => setBillingInterval('month')}
-            className={`${
-              billingInterval === 'month' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'
-            } relative rounded-md py-2 px-6 text-sm font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+            className={`${billingInterval === 'month' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'
+              } relative rounded-md py-2 px-6 text-sm font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500`}
           >
             Monthly billing
           </button>
           <button
             type="button"
             onClick={() => setBillingInterval('year')}
-            className={`${
-              billingInterval === 'year' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'
-            } relative rounded-md py-2 px-6 text-sm font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500`}
+            className={`${billingInterval === 'year' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-900'
+              } relative rounded-md py-2 px-6 text-sm font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500`}
           >
             Yearly billing
           </button>
@@ -112,7 +126,7 @@ export function PricingClient({ user, loginUrl }: PricingClientProps) {
           Thank you for subscribing! Your plan has been updated.
         </div>
       )}
-      
+
       {isCanceled && (
         <div className="max-w-7xl mx-auto mt-8 p-4 bg-yellow-100 text-yellow-700 rounded-md text-center">
           Subscription canceled. No charges were made.
@@ -155,11 +169,10 @@ export function PricingClient({ user, loginUrl }: PricingClientProps) {
             <button
               onClick={() => plan.priceId ? handleSubscribe(plan.priceId) : null}
               disabled={!plan.priceId}
-              className={`mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${
-                plan.priceId
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
-                  : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 cursor-default'
-              }`}
+              className={`mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium ${plan.priceId
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer'
+                : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 cursor-default'
+                }`}
             >
               {plan.action}
             </button>

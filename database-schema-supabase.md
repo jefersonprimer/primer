@@ -141,6 +141,20 @@ CREATE TABLE public.rag_entities (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT rag_entities_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.subscriptions (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL UNIQUE,
+  stripe_customer_id text UNIQUE,
+  stripe_subscription_id text UNIQUE,
+  plan text NOT NULL DEFAULT 'free'::text,
+  status text NOT NULL DEFAULT 'active'::text,
+  current_period_start timestamp with time zone,
+  current_period_end timestamp with time zone,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT subscriptions_pkey PRIMARY KEY (id),
+  CONSTRAINT subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+);
 CREATE TABLE public.user_api_keys (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -167,5 +181,6 @@ CREATE TABLE public.users (
   google_id text UNIQUE,
   full_name text,
   profile_picture text,
+  plan text NOT NULL DEFAULT 'free'::text CHECK (plan = ANY (ARRAY['free'::text, 'plus'::text, 'pro'::text])),
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
