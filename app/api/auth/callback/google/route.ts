@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/database';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -46,7 +47,8 @@ export async function GET(req: NextRequest) {
     const userData = await userResponse.json();
     const { id: googleId, email, name, picture } = userData;
 
-    // 3. UPSERT User
+    // 3. UPSERT User (login only - no calendar tokens here)
+    // Calendar tokens are now saved separately via /api/auth/callback/calendar
     const sql = `
       INSERT INTO users (email, google_id, full_name, profile_picture, password_hash)
       VALUES ($1, $2, $3, $4, 'google_auth_placeholder')
@@ -60,15 +62,69 @@ export async function GET(req: NextRequest) {
     const result = await query(sql, [email, googleId, name, picture]);
     const user = result.rows[0];
 
-    // 4. Create Session (JWT)
+    // Check Auth Source
+    const cookieStore = await cookies();
+    let source = cookieStore.get('auth_source')?.value;
+    let pollId: string | undefined;
+
+    const stateParam = searchParams.get('state');
+
+    console.log('[Auth Callback] Init - Cookie Source:', source, 'State:', stateParam);
+
+    if (!source && stateParam) {
+      try {
+        const state = JSON.parse(stateParam);
+        if (state.source) {
+          source = state.source;
+        }
+        if (state.pollId) {
+          pollId = state.pollId;
+        }
+      } catch (e) {
+        console.error('Failed to parse state param:', e);
+      }
+    }
+
+    // If state has pollId, prioritize it (cookie might be stale or missing in some flows)
+    if (!pollId && stateParam) {
+      try {
+        const state = JSON.parse(stateParam);
+        if (state.pollId) pollId = state.pollId;
+      } catch { }
+    }
+
+    console.log('[Auth Callback] Final - Source:', source, 'PollId:', pollId);
+
+    if (source === 'desktop' || source === 'dev') {
+      const sessionId = uuidv4();
+
+      // If we have a pollId, append it to source for DB storage so we can query it later
+      const dbSource = pollId ? `${source}:${pollId}` : source;
+
+      console.log('[Auth Callback] Inserting Session - ID:', sessionId, 'DBSource:', dbSource);
+
+      // Insert into oauth_sessions
+      await query(
+        `INSERT INTO oauth_sessions (id, user_id, source, provider, expires_at)
+             VALUES ($1, $2, $3, 'google', NOW() + INTERVAL '1 minute')`,
+        [sessionId, user.id, dbSource]
+      );
+
+      // Clear source cookie
+      cookieStore.delete('auth_source');
+
+      // Redirect with session
+      return NextResponse.redirect(new URL(`/auth-success?session=${sessionId}&source=${source}`, req.url));
+    }
+
+    // 4. Create Session (JWT) for Web
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
 
-    // 5. Set Cookie
-    const cookieStore = await cookies();
+    // 5. Set Cookie for Web
     cookieStore.set('session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -76,8 +132,11 @@ export async function GET(req: NextRequest) {
       path: '/',
     });
 
-    // 6. Redirect
-    return NextResponse.redirect(new URL('/pricing', req.url));
+    // Clear source cookie
+    cookieStore.delete('auth_source');
+
+    // 6. Redirect Web
+    return NextResponse.redirect(new URL('/auth-success', req.url));
 
   } catch (error) {
     console.error('Auth Error:', error instanceof Error ? error.message : error);

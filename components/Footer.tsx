@@ -9,35 +9,35 @@ export function Footer() {
         <div className="flex flex-col md:flex-row px-8 justify-between items-start mb-12">
           <div className="mb-8 md:mb-0 max-w-md">
             <h2 className="text-2xl font-bold mb-4">Primer</h2>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <p className="text-gray-400  leading-relaxed">
               Your real-time support tool that suggests responses and arguments during
               online meetings, helping you handle objections and communicate with more
               confidence.
             </p>
           </div>
 
-          <div className="flex gap-12">
+          <div className="flex gap-12 text-base">
             <nav className="flex flex-col gap-3">
-              <h3 className="text-white/60 text-base">Support</h3>
-              <a href="/help-center" className="text-gray-300 hover:text-white transition-colors text-sm">
+              <h3 className="font-medium tracking-tight text-white">Support</h3>
+              <a href="/help-center" className="text-white hover:text-white transition-colors ">
                 Help center
               </a>
-              <a href="mailto:jefersonprimer@gmail.com" className="text-gray-300 hover:text-white transition-colors text-sm">
+              <a href="mailto:jefersonprimer@gmail.com" className="text-white hover:text-white transition-colors ">
                 Contact us
               </a>
             </nav>
             <nav className="flex flex-col gap-3">
-              <h3 className="text-white/60 text-base">Legal</h3>
-              <a href="/terms-of-use" className="text-gray-300 hover:text-white transition-colors text-sm">
+              <h3 className="font-medium tracking-tight text-white">Legal</h3>
+              <a href="/terms-of-use" className="text-white hover:text-white transition-colors ">
                 Terms of Use
               </a>
-              <a href="privacy-policy" className="text-gray-300 hover:text-white transition-colors text-sm">
+              <a href="privacy-policy" className="text-white hover:text-white transition-colors ">
                 Privacy Policy
               </a>
-              <a href="cancellation-policy" className="text-gray-300 hover:text-white transition-colors text-sm">
+              <a href="cancellation-policy" className="text-white hover:text-white transition-colors ">
                 Cancellation Policy
               </a>
-              <a href="refund-policy" className="text-gray-300 hover:text-white transition-colors text-sm">
+              <a href="refund-policy" className="text-white hover:text-white transition-colors ">
                 Refund Policy
               </a>
             </nav>
@@ -45,7 +45,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center px-8">
-          <p className="text-gray-400 text-sm mb-4 sm:mb-0">
+          <p className="text-gray-400  mb-4 sm:mb-0">
             © 2026 Primer. All rights reserved
           </p>
           
