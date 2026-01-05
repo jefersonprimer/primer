@@ -40,11 +40,12 @@ function AuthSuccessContent() {
   }, [session, source]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
-        <h1 className="text-2xl font-bold text-green-600 mb-4">Login Successful!</h1>
-        <p className="text-gray-600 mb-6">
-          You have been authenticated.
+    <div className="flex flex-col items-center justify-center min-h-screen bg-black p-4">
+      <div className="p-8 rounded-lg shadow-md max-w-md w-full">
+        <h1 className="text-2xl font-bold text-white mb-4">Opening Primer</h1>
+        <p className="text-white/90 mb-6">
+          You can now view sessions and manage settings directly from the Primer app, if you werent redirected immediately,
+          click here.  
         </p>
 
         {source === 'desktop' && (
