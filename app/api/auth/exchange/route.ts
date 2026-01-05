@@ -59,7 +59,11 @@ export async function POST(req: NextRequest) {
         // Calendar connection status
         isCalendarConnected: !!user.google_calendar_token,
         google_calendar_token: user.google_calendar_token || null,
-      }
+      },
+      // Google Calendar tokens for desktop session sync
+      google_access_token: user.google_calendar_token || null,
+      google_refresh_token: user.google_calendar_refresh_token || null,
+      google_token_expires_at: null, // Token expiry not stored, will use default
     });
 
   } catch (error) {
