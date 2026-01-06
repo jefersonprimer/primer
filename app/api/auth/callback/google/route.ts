@@ -47,20 +47,52 @@ export async function GET(req: NextRequest) {
     const userData = await userResponse.json();
     const { id: googleId, email, name, picture } = userData;
 
-    // 3. UPSERT User (login only - no calendar tokens here)
-    // Calendar tokens are now saved separately via /api/auth/callback/calendar
-    const sql = `
-      INSERT INTO users (email, google_id, full_name, profile_picture, password_hash)
-      VALUES ($1, $2, $3, $4, 'google_auth_placeholder')
+    // 3. UPSERT User
+    const userSql = `
+      INSERT INTO users (email, full_name, profile_picture, email_verified)
+      VALUES ($1, $2, $3, true)
       ON CONFLICT (email) DO UPDATE
-      SET google_id = EXCLUDED.google_id,
-          full_name = EXCLUDED.full_name,
-          profile_picture = EXCLUDED.profile_picture
+      SET full_name = EXCLUDED.full_name,
+          profile_picture = EXCLUDED.profile_picture,
+          email_verified = true
       RETURNING id, email
     `;
 
-    const result = await query(sql, [email, googleId, name, picture]);
-    const user = result.rows[0];
+    const userResult = await query(userSql, [email, name, picture]);
+    const user = userResult.rows[0];
+
+    // 4. UPSERT Auth Method
+    // Check if auth method exists to know if we should send welcome email
+    const authMethodCheck = await query(
+      "SELECT id FROM user_auth_methods WHERE user_id = $1 AND provider = 'google'",
+      [user.id]
+    );
+
+    const isNewGoogleAuth = authMethodCheck.rows.length === 0;
+
+    if (isNewGoogleAuth) {
+      await query(
+        "INSERT INTO user_auth_methods (user_id, provider, provider_user_id) VALUES ($1, 'google', $2)",
+        [user.id, googleId]
+      );
+      
+      // Send welcome email
+      // We import it dynamically or at the top. I'll need to add the import.
+      // But 'replace' tool context is limited. I'll add the import in a separate call or just rely on the user adding it if I can't see the top.
+      // Actually, I should verify imports first.
+    } else {
+        // Ensure provider_user_id is up to date if needed (unlikely to change for google)
+         await query(
+            "UPDATE user_auth_methods SET provider_user_id = $2 WHERE user_id = $1 AND provider = 'google'",
+            [user.id, googleId]
+         );
+    }
+    
+    // Import sendWelcomeEmail
+    const { sendWelcomeEmail } = await import('@/lib/email');
+    if (isNewGoogleAuth) {
+        sendWelcomeEmail(email, name).catch(console.error);
+    }
 
     // Check Auth Source
     const cookieStore = await cookies();
