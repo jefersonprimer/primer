@@ -12,6 +12,7 @@ export default function SignupPage() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -59,21 +60,23 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Create your account
+        <div className="flex flex-col text-center">
+          <h1 className="text-white text-xl">P</h1>
+          <h2 className="mt-4 text-center text-3xl font-bold tracking-tight text-white">
+            Cadastra-se 
           </h2>
         </div>
 
-        <div className="mt-8 space-y-6">
+
+        <div className="mt-6 space-y-6 border border-white/10 p-12 rounded-xl">
           {step === 1 ? (
             <form className="space-y-6" onSubmit={handleStep1}>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                    First Name
+                  <label htmlFor="firstName" className="block text-sm font-medium text-white">
+                    Nome
                   </label>
                   <div className="mt-1">
                     <input
@@ -83,13 +86,14 @@ export default function SignupPage() {
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="Seu primeiro nome"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
                     />
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                    Last Name
+                  <label htmlFor="lastName" className="block text-sm font-medium text-white">
+                    Sobrenome
                   </label>
                   <div className="mt-1">
                     <input
@@ -99,6 +103,7 @@ export default function SignupPage() {
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Seu sobrenome"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
                     />
                   </div>
@@ -106,8 +111,8 @@ export default function SignupPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Email address
+                <label htmlFor="email" className="block text-sm font-medium text-white">
+                  E-mail
                 </label>
                 <div className="mt-1">
                   <input
@@ -118,6 +123,7 @@ export default function SignupPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Seu endereço de e-mail"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
                   />
                 </div>
@@ -128,7 +134,7 @@ export default function SignupPage() {
               <div>
                 <button
                   type="submit"
-                  className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="flex w-full justify-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-black shadow-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                   Continue
                 </button>
@@ -137,33 +143,47 @@ export default function SignupPage() {
           ) : (
             <form className="space-y-6" onSubmit={handleSignup}>
               <div>
-                <div className="flex justify-between items-center mb-4">
-                  <p className="text-sm text-gray-700">Signing up as <strong>{email}</strong></p>
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="text-xs text-indigo-600 hover:text-indigo-500"
-                  >
-                    Change
-                  </button>
+                  <div className="flex flex-col gap-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-white">
+                    E-mail
+                  </label>
+                  <p className="text-sm text-white">{email}</p>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Create Password
+                <label htmlFor="password" className="block text-sm font-medium text-white">
+                  Senha
                 </label>
-                <div className="mt-1">
+                <div className="mt-1 relative">
                   <input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    placeholder="Criar uma senha"
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border pr-10"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -173,7 +193,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  className="flex w-full justify-center rounded-md border border-transparent bg-white px-4 py-2 text-sm font-medium text-black shadow-sm hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                   {isLoading ? 'Creating Account...' : 'Continue'}
                 </button>
@@ -182,11 +202,11 @@ export default function SignupPage() {
           )}
 
           <div className="text-center mt-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-white">
               Already have an account?{' '}
               <Link
                 href={`/auth/login${searchParams.toString() ? `?${searchParams.toString()}` : ''}`}
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className="font-medium text-blue-400 hover:text-blue-500"
               >
                 Sign in
               </Link>

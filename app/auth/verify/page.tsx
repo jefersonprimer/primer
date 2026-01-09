@@ -15,7 +15,17 @@ function VerifyContent() {
   const [error, setError] = useState('');
   const [resendStatus, setResendStatus] = useState('');
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Timer countdown
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const intervalId = setInterval(() => {
+      setTimeLeft((t) => t - 1);
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, [timeLeft]);
 
   // Auto-focus first input on mount
   useEffect(() => {
@@ -69,6 +79,7 @@ function VerifyContent() {
   };
 
   const handleResend = async () => {
+    if (timeLeft > 0) return;
     setResendStatus('Sending...');
     try {
       const res = await fetch('/api/auth/resend', {
@@ -78,6 +89,7 @@ function VerifyContent() {
       });
       if (res.ok) {
         setResendStatus('Code resent!');
+        setTimeLeft(30);
         setDigits(Array(CODE_LENGTH).fill(''));
         inputRefs.current[0]?.focus();
       } else {
@@ -145,28 +157,27 @@ function VerifyContent() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-black  px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        {/* Card Container */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/20">
-          {/* Header */}
+        
           <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
+            <div className="text-white text-3xl">
+              P  
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">
-              Verify your email
+              Verifique seu e-mail
             </h2>
-            <p className="text-gray-300 text-sm">
-              We sent a 6-digit code to
-            </p>
-            <p className="text-indigo-300 font-medium mt-1">
-              {email}
-            </p>
           </div>
 
+        <div className="backdrop-blur-xl rounded-xl p-12 shadow-2xl border border-white/20">
+           <div className="flex flex-col mb-2">
+            <p className="text-white text-sm">
+              Digite o código enviado para
+            </p>
+            <p className="text-white font-semibold mt-1">
+              {email}
+            </p>
+          </div> 
           {/* Code Input Grid */}
           <form onSubmit={handleVerify}>
             <div className="flex justify-center gap-2 sm:gap-3 mb-6">
@@ -185,17 +196,17 @@ function VerifyContent() {
                   onBlur={() => setFocusedIndex(null)}
                   disabled={isLoading}
                   className={`
-                    w-11 h-14 sm:w-12 sm:h-16 
+                    w-12 h-12 sm:w-12 sm:h-12
                     text-center text-2xl font-bold 
-                    bg-white/10 border-2 rounded-xl
+                    border-2 rounded-lg
                     text-white placeholder-gray-400
                     transition-all duration-200 ease-out
                     focus:outline-none
                     disabled:opacity-50 disabled:cursor-not-allowed
                     ${focusedIndex === index
-                      ? 'border-indigo-400 bg-white/20 scale-105 shadow-lg shadow-indigo-500/30'
+                      ? 'border-blue-400 scale-105'
                       : digit
-                        ? 'border-indigo-500/50 bg-white/15'
+                        ? 'border-blue-500'
                         : 'border-white/20 hover:border-white/40'
                     }
                     ${error ? 'border-red-400 animate-shake' : ''}
@@ -214,48 +225,29 @@ function VerifyContent() {
               </div>
             )}
 
-            {/* Verify Button */}
-            <button
-              type="submit"
-              disabled={isLoading || digits.some(d => d === '')}
-              className={`
-                w-full py-3 px-4 rounded-xl font-semibold text-white
-                transition-all duration-200 ease-out
-                ${isLoading || digits.some(d => d === '')
-                  ? 'bg-gray-600 cursor-not-allowed opacity-50'
-                  : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 hover:shadow-lg hover:shadow-indigo-500/30 hover:-translate-y-0.5'
-                }
-              `}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Verifying...
-                </span>
-              ) : 'Verify Code'}
-            </button>
           </form>
 
           {/* Resend Section */}
-          <div className="text-center mt-6 pt-6 border-t border-white/10">
-            <p className="text-gray-400 text-sm mb-2">
-              Didn't receive the code?
-            </p>
-            <button
-              onClick={handleResend}
-              disabled={isLoading}
-              className="text-indigo-400 hover:text-indigo-300 font-medium text-sm transition-colors duration-200 hover:underline"
-            >
-              Resend Code
-            </button>
-            {resendStatus && (
-              <p className={`text-xs mt-2 ${resendStatus.includes('resent') ? 'text-green-400' : 'text-gray-400'}`}>
-                {resendStatus}
+          <div className="flex flex-col items-center justify-center gap-2 mt-4">
+            <div className="flex items-center gap-2">
+              <p className="text-white text-sm">
+                Didn't receive the code?
               </p>
-            )}
+              {timeLeft > 0 ? (
+                <div className="flex items-center gap-2 text-white/60 text-sm">
+                  Reenviar 
+                  <span>{timeLeft}s</span>
+                </div>
+              ) : (
+                <button
+                  onClick={handleResend}
+                  disabled={isLoading}
+                  className="text-white/80 hover:text-indigo-300 font-medium text-sm transition-colors duration-200 hover:underline"
+                >
+                  Resend Code
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -268,7 +260,7 @@ function VerifyContent() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Go back
+            Voltar ao login
           </button>
         </div>
       </div>

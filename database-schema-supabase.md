@@ -155,15 +155,15 @@ CREATE TABLE public.subscriptions (
   CONSTRAINT subscriptions_pkey PRIMARY KEY (id),
   CONSTRAINT subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
-CREATE TABLE public.user_api_keys (
+CREATE TABLE public.user_auth_methods (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid,
+  user_id uuid NOT NULL,
   provider text NOT NULL,
-  api_key text NOT NULL,
+  provider_user_id text,
+  password_hash text,
   created_at timestamp with time zone DEFAULT now(),
-  selected_model character varying,
-  CONSTRAINT user_api_keys_pkey PRIMARY KEY (id),
-  CONSTRAINT user_api_keys_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
+  CONSTRAINT user_auth_methods_pkey PRIMARY KEY (id),
+  CONSTRAINT user_auth_methods_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.user_preferences (
   user_id uuid NOT NULL,
